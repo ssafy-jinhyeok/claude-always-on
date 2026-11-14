@@ -13,6 +13,8 @@ if ($Uninstall) {
 
 $me     = [Security.Principal.WindowsIdentity]::GetCurrent()
 $script = [Security.SecurityElement]::Escape((Join-Path $PSScriptRoot 'watchdog.ps1'))
+# Two triggers: the logon trigger's repetition only starts at the next logon (a task registered mid-session
+# ran once and did not repeat within 400 s), so the time trigger repeats from the moment of install.
 $xml = @"
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
@@ -40,6 +42,12 @@ $xml = @"
       </Repetition>
       <UserId>$([Security.SecurityElement]::Escape($me.Name))</UserId>
     </LogonTrigger>
+    <TimeTrigger>
+      <Repetition>
+        <Interval>PT5M</Interval>
+      </Repetition>
+      <StartBoundary>$(Get-Date -Format s)</StartBoundary>
+    </TimeTrigger>
   </Triggers>
   <Actions Context="Author">
     <Exec>
@@ -50,6 +58,4 @@ $xml = @"
 </Task>
 "@
 Register-ScheduledTask -TaskName $TaskName -Xml $xml -Force | Out-Null
-# shortcut: the 5-minute repetition starts only at the next logon (a task registered mid-session ran once
-# and did not repeat within 400 s), add a time trigger if that gap matters
 Start-ScheduledTask -TaskName $TaskName

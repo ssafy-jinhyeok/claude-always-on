@@ -3,7 +3,7 @@
 Keeps one background [Claude Code](https://claude.com/claude-code) session alive on **Windows** across
 logons, reboots and crashes, so there is always a session to reach through Remote Control.
 
-A scheduled task runs `watchdog.ps1` at logon and every 5 minutes after it:
+A scheduled task runs `watchdog.ps1` at logon and every 5 minutes:
 
 | The session recorded in `session-id.txt` | The watchdog |
 |---|---|
@@ -32,8 +32,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.claude\al
 once. The clone is the installation: the task runs `watchdog.ps1` from that folder, so `git pull`
 updates it. Run `install.ps1` again if you move the folder.
 
-The every-5-minutes part starts at your next logon: a task registered in the middle of a logon session
-ran once and did not repeat (checked over 400 s). Sign out and in once if you want it running now.
+The task has two triggers, each repeating every 5 minutes: one at logon and one from the time of install.
+The second is there because the first only starts repeating at the next logon.
 
 ## Trust repair
 
